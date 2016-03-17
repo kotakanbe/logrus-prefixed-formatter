@@ -49,6 +49,9 @@ type TextFormatter struct {
 	// that log extremely frequently and don't use the JSON formatter this may not
 	// be desired.
 	DisableSorting bool
+
+	// Message
+	MsgAnsiColor string
 }
 
 func (f *TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
@@ -113,16 +116,21 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *logrus.Entry, keys 
 		levelText = "WARN"
 	}
 
+	if len(f.MsgAnsiColor) == 0 {
+		f.MsgAnsiColor = ansi.DefaultFG
+	}
+
 	prefix := ""
 	prefixValue, ok := entry.Data["prefix"]
 	if ok {
-		prefix = fmt.Sprint(" ", ansi.Cyan, prefixValue, ":", reset)
+		//  prefix = fmt.Sprint(" ", ansi.Cyan, prefixValue, ":", reset)
+		prefix = fmt.Sprint(" ", ansi.Cyan, prefixValue, reset)
 	}
 
 	if f.ShortTimestamp {
-		fmt.Fprintf(b, "%s[%04d]%s %s%+5s%s%s %s", ansi.LightBlack, miniTS(), reset, levelColor, levelText, reset, prefix, entry.Message)
+		fmt.Fprintf(b, "%s[%04d]%s %s%+5s%s%s %s%s%s", ansi.LightBlack, miniTS(), reset, levelColor, levelText, reset, prefix, f.MsgAnsiColor, entry.Message, reset)
 	} else {
-		fmt.Fprintf(b, "%s[%s]%s %s%+5s%s%s %s", ansi.LightBlack, entry.Time.Format(timestampFormat), reset, levelColor, levelText, reset, prefix, entry.Message)
+		fmt.Fprintf(b, "%s[%s]%s %s%+5s%s%s %s%s%s", ansi.LightBlack, entry.Time.Format(timestampFormat), reset, levelColor, levelText, reset, prefix, f.MsgAnsiColor, entry.Message, reset)
 	}
 	for _, k := range keys {
 		v := entry.Data[k]
