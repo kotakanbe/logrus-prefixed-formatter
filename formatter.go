@@ -123,8 +123,8 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *logrus.Entry, keys 
 	prefix := ""
 	prefixValue, ok := entry.Data["prefix"]
 	if ok {
-		//  prefix = fmt.Sprint(" ", ansi.Cyan, prefixValue, ":", reset)
-		prefix = fmt.Sprint(" ", ansi.Cyan, prefixValue, reset)
+		//  prefix = fmt.Sprint(" ", ansi.Cyan, prefixValue, reset)
+		prefix = fmt.Sprint(" ", f.MsgAnsiColor, prefixValue, reset)
 	}
 
 	if f.ShortTimestamp {
