@@ -28,6 +28,7 @@ func miniTS() int {
 	return int(time.Since(baseTimestamp) / time.Second)
 }
 
+// TextFormatter ..
 type TextFormatter struct {
 	// Set to true to bypass checking for a TTY before outputting colors.
 	ForceColors bool
@@ -54,8 +55,9 @@ type TextFormatter struct {
 	MsgAnsiColor string
 }
 
+// Format ..
 func (f *TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
-	var keys []string = make([]string, 0, len(entry.Data))
+	var keys = make([]string, 0, len(entry.Data))
 	for k := range entry.Data {
 		if k != "prefix" {
 			keys = append(keys, k)
@@ -122,9 +124,10 @@ func (f *TextFormatter) printColored(b *bytes.Buffer, entry *logrus.Entry, keys 
 
 	prefix := ""
 	prefixValue, ok := entry.Data["prefix"]
-	if ok {
+	str, _ := prefixValue.(string)
+	if ok && 0 < len(str) {
 		//  prefix = fmt.Sprint(" ", ansi.Cyan, prefixValue, reset)
-		prefix = fmt.Sprint(" ", f.MsgAnsiColor, prefixValue, reset)
+		prefix = fmt.Sprint(f.MsgAnsiColor, " [", prefixValue, "]", reset)
 	}
 
 	if f.ShortTimestamp {
