@@ -6,6 +6,7 @@ import (
 	"runtime"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -16,12 +17,10 @@ const reset = ansi.Reset
 
 var (
 	baseTimestamp time.Time
-	isTerminal    bool
 )
 
 func init() {
 	baseTimestamp = time.Now()
-	isTerminal = logrus.IsTerminal()
 }
 
 func miniTS() int {
@@ -53,6 +52,9 @@ type TextFormatter struct {
 
 	// Message
 	MsgAnsiColor string
+
+	isTerminal   bool
+	terminalOnce sync.Once
 }
 
 // Format ..
@@ -72,7 +74,13 @@ func (f *TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 
 	prefixFieldClashes(entry.Data)
 
-	isColorTerminal := isTerminal && (runtime.GOOS != "windows")
+	f.terminalOnce.Do(func() {
+		if entry.Logger != nil {
+			f.isTerminal = logrus.IsTerminal(entry.Logger.Out)
+		}
+	})
+
+	isColorTerminal := f.isTerminal && (runtime.GOOS != "windows")
 	isColored := (f.ForceColors || isColorTerminal) && !f.DisableColors
 
 	timestampFormat := f.TimestampFormat
