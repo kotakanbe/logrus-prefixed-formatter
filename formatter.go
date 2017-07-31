@@ -3,11 +3,15 @@ package prefixed
 import (
 	"bytes"
 	"fmt"
+	"io"
+	"os"
 	"runtime"
 	"sort"
 	"strings"
 	"sync"
 	"time"
+
+	"golang.org/x/crypto/ssh/terminal"
 
 	"github.com/mgutz/ansi"
 	"github.com/sirupsen/logrus"
@@ -57,6 +61,15 @@ type TextFormatter struct {
 	terminalOnce sync.Once
 }
 
+func (f *TextFormatter) checkIfTerminal(w io.Writer) bool {
+	switch v := w.(type) {
+	case *os.File:
+		return terminal.IsTerminal(int(v.Fd()))
+	default:
+		return false
+	}
+}
+
 // Format ..
 func (f *TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	var keys = make([]string, 0, len(entry.Data))
@@ -76,7 +89,7 @@ func (f *TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 
 	f.terminalOnce.Do(func() {
 		if entry.Logger != nil {
-			f.isTerminal = logrus.IsTerminal(entry.Logger.Out)
+			f.isTerminal = f.checkIfTerminal(entry.Logger.Out)
 		}
 	})
 
