@@ -3,8 +3,8 @@
   name = "github.com/mgutz/ansi"
 
 [[constraint]]
+  branch = "master"
   name = "github.com/sirupsen/logrus"
-  version = "1.0.2"
 
 [[constraint]]
   branch = "master"
